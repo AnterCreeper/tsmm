@@ -4,3 +4,6 @@
 [submodule "perfmon"]
 	path = perfmon
 	url = https://github.com/intel/perfmon
+[submodule "STREAM"]
+	path = STREAM
+	url = https://github.com/jeffhammond/STREAM

@@ -8,6 +8,14 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
+#include <immintrin.h>
+
+void prefetch(void* data, size_t size) {
+    for(int i = 0; i < size; i++) {
+        _mm_prefetch(data+i*CACHE_LINE_SIZE, _MM_HINT_T2);
+    }
+    return;
+}
 
 int prepare(double* A, double* B) {
     FILE *fileA = fopen("input_A.bin", "rb");
@@ -21,6 +29,7 @@ int prepare(double* A, double* B) {
     FILE *fileB = fopen("input_B.bin", "rb");
     if(fileB != NULL && B != NULL) {
         fread(B, sizeof(double), 16*16000, fileB);
+        prefetch(B, 16*16000/CACHE_LINE_SIZE);
         fclose(fileB);
         printf("matrix B has been read from input_B.bin\n");
     } else {
