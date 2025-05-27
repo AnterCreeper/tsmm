@@ -17,6 +17,21 @@ void prefetch(void* data, size_t size) {
     return;
 }
 
+void flush() {
+    int size; //in KiB
+    FILE *file = fopen("/sys/devices/system/cpu/cpu0/cache/index3/size", "r");
+    if(file != NULL) {
+	fscanf(file, "%d", &size);
+        fclose(file);
+        printf("l3_cache_size: %d\n", size);
+    } else {
+        printf("failed to get L3 cache size\n");
+    }
+//    void* cache;
+//    posix_memalign(cache, CACHE_LINE_SIZE, size*1024);
+    return;
+}
+
 int prepare(double* A, double* B) {
     FILE *fileA = fopen("input_A.bin", "rb");
     if(fileA != NULL && A != NULL) {

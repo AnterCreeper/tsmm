@@ -65,6 +65,7 @@ void matmul_worker_row(double* A, double* B, double* C, int i) {
     return;
 }
 
+/*
 __m256d matmul_worker_column(double* A, double* B) { //A[4][16] B[16]
     __m256d R[4];
     __m256d B0 = _mm256_load_pd[0];
@@ -90,6 +91,7 @@ __m256d matmul_worker_column(double* A, double* B) { //A[4][16] B[16]
     __m256d R1 = _mm256_hadd_pd(R[2], R[3]);
     return;
 }
+*/
 
 void matmul_row(double* C, double* A, double* B) {
 #pragma omp parallel num_threads(W_OMP_THREADS)
@@ -105,6 +107,7 @@ void matmul_row(double* C, double* A, double* B) {
     return;
 }
 
+/*
 void matmul_column(double* C, double* A, double* B) {
 #pragma omp parallel num_threads(W_OMP_THREADS)
 {
@@ -118,6 +121,7 @@ void matmul_column(double* C, double* A, double* B) {
 }
     return;
 }
+*/
 
 int main() {
     double *A, *B, *C;

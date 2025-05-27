@@ -1,32 +1,6 @@
 	.file	"omp.c"
 	.text
 	.p2align 4
-	.type	matmul_column._omp_fn.0, @function
-matmul_column._omp_fn.0:
-.LFB6400:
-	.cfi_startproc
-	pushq	%rbx
-	.cfi_def_cfa_offset 16
-	.cfi_offset 3, -16
-	call	omp_get_thread_num@PLT
-	movl	%eax, %ebx
-	call	omp_get_num_threads@PLT
-	cmpl	$15999, %ebx
-	jg	.L6
-	.p2align 4,,10
-	.p2align 3
-.L2:
-	addl	%eax, %ebx
-	cmpl	$15999, %ebx
-	jle	.L2
-.L6:
-	popq	%rbx
-	.cfi_def_cfa_offset 8
-	ret
-	.cfi_endproc
-.LFE6400:
-	.size	matmul_column._omp_fn.0, .-matmul_column._omp_fn.0
-	.p2align 4
 	.globl	transpose
 	.type	transpose, @function
 transpose:
@@ -36,7 +10,7 @@ transpose:
 	movslq	%edx, %rdx
 	leaq	(%rdi,%rdx,8), %rax
 	leaq	128(%rsi), %rdx
-.L10:
+.L2:
 	vmovapd	(%rax), %ymm5
 	addq	$32, %rsi
 	addq	$1024, %rax
@@ -54,7 +28,7 @@ transpose:
 	vmovapd	%ymm2, 224(%rsi)
 	vmovapd	%ymm0, 352(%rsi)
 	cmpq	%rsi, %rdx
-	jne	.L10
+	jne	.L2
 	vzeroupper
 	ret
 	.cfi_endproc
@@ -82,7 +56,7 @@ matmul_worker_row:
 	andq	$-32, %rsp
 	addq	%rcx, %rsi
 	subq	$8, %rsp
-.L13:
+.L6:
 	vmovapd	(%rsi), %ymm4
 	vbroadcastsd	(%rdi), %ymm8
 	addq	$1024, %rdi
@@ -126,17 +100,17 @@ matmul_worker_row:
 	vmovapd	%ymm1, -88(%rsp)
 	vmovapd	%ymm2, -56(%rsp)
 	vmovapd	%ymm3, -24(%rsp)
-	jne	.L13
+	jne	.L6
 	addq	%rcx, %rdx
 	leaq	-120(%rsp), %rax
 	leaq	8(%rsp), %rcx
-.L14:
+.L7:
 	vmovapd	(%rax), %ymm5
 	addq	$32, %rax
 	addq	$128000, %rdx
 	vmovntpd	%ymm5, -128000(%rdx)
 	cmpq	%rax, %rcx
-	jne	.L14
+	jne	.L7
 	vzeroupper
 	leave
 	.cfi_def_cfa 7, 8
@@ -147,7 +121,7 @@ matmul_worker_row:
 	.p2align 4
 	.type	matmul_row._omp_fn.0, @function
 matmul_row._omp_fn.0:
-.LFB6399:
+.LFB6397:
 	.cfi_startproc
 	pushq	%r14
 	.cfi_def_cfa_offset 16
@@ -172,18 +146,18 @@ matmul_row._omp_fn.0:
 	call	omp_get_num_threads@PLT
 	leal	(%r13,%r13), %r10d
 	cmpl	$3999, %r10d
-	jg	.L26
+	jg	.L19
 	leal	(%rax,%rax), %r14d
 	leaq	4096000(%rbp), %r13
 	.p2align 4,,10
 	.p2align 3
-.L21:
+.L14:
 	leal	1(%r10), %r11d
 	movq	%r12, %r9
 	movq	%rbp, %r8
 	.p2align 4,,10
 	.p2align 3
-.L20:
+.L13:
 	movq	%r8, %rdx
 	movq	%r9, %rdi
 	movl	%r10d, %ecx
@@ -197,11 +171,11 @@ matmul_row._omp_fn.0:
 	addq	$32, %r9
 	call	matmul_worker_row
 	cmpq	%r13, %r8
-	jne	.L20
+	jne	.L13
 	addl	%r14d, %r10d
 	cmpl	$3999, %r10d
-	jle	.L21
-.L26:
+	jle	.L14
+.L19:
 	popq	%rbx
 	.cfi_def_cfa_offset 40
 	popq	%rbp
@@ -214,23 +188,13 @@ matmul_row._omp_fn.0:
 	.cfi_def_cfa_offset 8
 	ret
 	.cfi_endproc
-.LFE6399:
+.LFE6397:
 	.size	matmul_row._omp_fn.0, .-matmul_row._omp_fn.0
-	.p2align 4
-	.globl	matmul_worker_column
-	.type	matmul_worker_column, @function
-matmul_worker_column:
-.LFB6395:
-	.cfi_startproc
-	ret
-	.cfi_endproc
-.LFE6395:
-	.size	matmul_worker_column, .-matmul_worker_column
 	.p2align 4
 	.globl	matmul_row
 	.type	matmul_row, @function
 matmul_row:
-.LFB6396:
+.LFB6395:
 	.cfi_startproc
 	subq	$40, %rsp
 	.cfi_def_cfa_offset 48
@@ -246,30 +210,8 @@ matmul_row:
 	.cfi_def_cfa_offset 8
 	ret
 	.cfi_endproc
-.LFE6396:
+.LFE6395:
 	.size	matmul_row, .-matmul_row
-	.p2align 4
-	.globl	matmul_column
-	.type	matmul_column, @function
-matmul_column:
-.LFB6397:
-	.cfi_startproc
-	subq	$40, %rsp
-	.cfi_def_cfa_offset 48
-	xorl	%ecx, %ecx
-	movq	%rdx, 16(%rsp)
-	movl	$6, %edx
-	movq	%rsi, 8(%rsp)
-	movq	%rsp, %rsi
-	movq	%rdi, (%rsp)
-	leaq	matmul_column._omp_fn.0(%rip), %rdi
-	call	GOMP_parallel@PLT
-	addq	$40, %rsp
-	.cfi_def_cfa_offset 8
-	ret
-	.cfi_endproc
-.LFE6397:
-	.size	matmul_column, .-matmul_column
 	.section	.rodata.str1.8,"aMS",@progbits,1
 	.align 8
 .LC0:
@@ -285,7 +227,7 @@ matmul_column:
 	.globl	main
 	.type	main, @function
 main:
-.LFB6398:
+.LFB6396:
 	.cfi_startproc
 	pushq	%r12
 	.cfi_def_cfa_offset 16
@@ -314,7 +256,7 @@ main:
 	movq	8(%rsp), %rdi
 	call	prepare@PLT
 	testl	%eax, %eax
-	jne	.L42
+	jne	.L32
 	xorl	%eax, %eax
 	movl	$65536, %ebx
 	leaq	32(%rsp), %r12
@@ -322,7 +264,7 @@ main:
 	leaq	matmul_row._omp_fn.0(%rip), %rbp
 	.p2align 4,,10
 	.p2align 3
-.L36:
+.L26:
 	vmovq	24(%rsp), %xmm1
 	movq	16(%rsp), %rax
 	xorl	%ecx, %ecx
@@ -334,25 +276,25 @@ main:
 	vmovdqa	%xmm0, 32(%rsp)
 	call	GOMP_parallel@PLT
 	subl	$1, %ebx
-	jne	.L36
+	jne	.L26
 	xorl	%eax, %eax
 	call	end_perf@PLT
 	movq	24(%rsp), %rdi
 	call	writeback@PLT
 	testl	%eax, %eax
-	jne	.L43
+	jne	.L33
 	movq	24(%rsp), %rdi
 	call	check@PLT
 	testl	%eax, %eax
 	movl	%eax, %ebx
-	jne	.L44
+	jne	.L34
 	movq	8(%rsp), %rdi
 	call	free@PLT
 	movq	16(%rsp), %rdi
 	call	free@PLT
 	movq	24(%rsp), %rdi
 	call	free@PLT
-.L33:
+.L23:
 	addq	$64, %rsp
 	.cfi_remember_state
 	.cfi_def_cfa_offset 32
@@ -364,23 +306,23 @@ main:
 	popq	%r12
 	.cfi_def_cfa_offset 8
 	ret
-.L42:
+.L32:
 	.cfi_restore_state
 	leaq	.LC0(%rip), %rdi
 	call	puts@PLT
-.L35:
+.L25:
 	orl	$-1, %ebx
-	jmp	.L33
-.L44:
+	jmp	.L23
+.L34:
 	leaq	.LC2(%rip), %rdi
 	call	puts@PLT
-	jmp	.L35
-.L43:
+	jmp	.L25
+.L33:
 	leaq	.LC1(%rip), %rdi
 	call	puts@PLT
-	jmp	.L35
+	jmp	.L25
 	.cfi_endproc
-.LFE6398:
+.LFE6396:
 	.size	main, .-main
 	.ident	"GCC: (Debian 12.2.0-14+deb12u1) 12.2.0"
 	.section	.note.GNU-stack,"",@progbits

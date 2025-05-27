@@ -4,6 +4,7 @@
 #define CACHE_LINE_SIZE 64
 #define MISMATCH_DELTA 1e-40
 
+void flush();
 int prepare(double* A, double *B);
 int writeback(double *C);
 int check(double *C);
