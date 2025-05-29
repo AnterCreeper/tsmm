@@ -1,27 +1,5 @@
 	.file	"common.c"
 	.text
-	.p2align 4
-	.globl	prefetch
-	.type	prefetch, @function
-prefetch:
-.LFB6393:
-	.cfi_startproc
-	testq	%rsi, %rsi
-	je	.L8
-	xorl	%eax, %eax
-	.p2align 4,,10
-	.p2align 3
-.L3:
-	addq	$1, %rax
-	prefetcht2	(%rdi)
-	addq	$64, %rdi
-	cmpq	%rax, %rsi
-	jne	.L3
-.L8:
-	ret
-	.cfi_endproc
-.LFE6393:
-	.size	prefetch, .-prefetch
 	.section	.rodata.str1.1,"aMS",@progbits,1
 .LC0:
 	.string	"r"
@@ -38,10 +16,10 @@ prefetch:
 	.string	"failed to get L3 cache size"
 	.text
 	.p2align 4
-	.globl	flush
-	.type	flush, @function
-flush:
-.LFB6394:
+	.globl	get_cache_size
+	.type	get_cache_size, @function
+get_cache_size:
+.LFB6393:
 	.cfi_startproc
 	pushq	%rbx
 	.cfi_def_cfa_offset 16
@@ -50,13 +28,14 @@ flush:
 	leaq	.LC1(%rip), %rdi
 	subq	$16, %rsp
 	.cfi_def_cfa_offset 32
+	movl	$0, 12(%rsp)
 	call	fopen@PLT
 	testq	%rax, %rax
-	je	.L11
-	leaq	12(%rsp), %rdx
-	movq	%rax, %rbx
+	je	.L2
 	leaq	.LC2(%rip), %rsi
 	movq	%rax, %rdi
+	movq	%rax, %rbx
+	leaq	12(%rsp), %rdx
 	xorl	%eax, %eax
 	call	__isoc99_fscanf@PLT
 	movq	%rbx, %rdi
@@ -65,22 +44,67 @@ flush:
 	leaq	.LC3(%rip), %rdi
 	xorl	%eax, %eax
 	call	printf@PLT
+.L3:
+	movl	12(%rsp), %eax
 	addq	$16, %rsp
 	.cfi_remember_state
 	.cfi_def_cfa_offset 16
 	popq	%rbx
 	.cfi_def_cfa_offset 8
 	ret
-.L11:
+.L2:
 	.cfi_restore_state
-	addq	$16, %rsp
-	.cfi_def_cfa_offset 16
 	leaq	.LC4(%rip), %rdi
-	popq	%rbx
-	.cfi_def_cfa_offset 8
-	jmp	puts@PLT
+	call	puts@PLT
+	jmp	.L3
+	.cfi_endproc
+.LFE6393:
+	.size	get_cache_size, .-get_cache_size
+	.p2align 4
+	.globl	prefetch
+	.type	prefetch, @function
+prefetch:
+.LFB6394:
+	.cfi_startproc
+	testq	%rsi, %rsi
+	je	.L13
+	xorl	%eax, %eax
+	.p2align 4,,10
+	.p2align 3
+.L8:
+	prefetcht2	(%rdi,%rax)
+	addq	$64, %rax
+	cmpq	%rsi, %rax
+	jb	.L8
+.L13:
+	ret
 	.cfi_endproc
 .LFE6394:
+	.size	prefetch, .-prefetch
+	.p2align 4
+	.globl	flush
+	.type	flush, @function
+flush:
+.LFB6395:
+	.cfi_startproc
+	testl	%esi, %esi
+	jle	.L15
+	decl	%esi
+	shrl	$6, %esi
+	salq	$6, %rsi
+	leaq	64(%rdi,%rsi), %rax
+	.p2align 4,,10
+	.p2align 3
+.L16:
+	clflushopt	(%rdi)
+	addq	$64, %rdi
+	cmpq	%rax, %rdi
+	jne	.L16
+.L15:
+	sfence
+	ret
+	.cfi_endproc
+.LFE6395:
 	.size	flush, .-flush
 	.section	.rodata.str1.1
 .LC5:
@@ -103,7 +127,7 @@ flush:
 	.globl	prepare
 	.type	prepare, @function
 prepare:
-.LFB6395:
+.LFB6396:
 	.cfi_startproc
 	pushq	%r13
 	.cfi_def_cfa_offset 16
@@ -112,61 +136,52 @@ prepare:
 	pushq	%r12
 	.cfi_def_cfa_offset 24
 	.cfi_offset 12, -24
-	movq	%rdi, %r12
-	leaq	.LC6(%rip), %rdi
+	movq	%rsi, %r12
+	movq	%r13, %rsi
 	pushq	%rbp
 	.cfi_def_cfa_offset 32
 	.cfi_offset 6, -32
+	movq	%rdi, %rbp
+	leaq	.LC6(%rip), %rdi
 	pushq	%rbx
 	.cfi_def_cfa_offset 40
 	.cfi_offset 3, -40
-	movq	%rsi, %rbx
-	movq	%r13, %rsi
 	subq	$8, %rsp
 	.cfi_def_cfa_offset 48
 	call	fopen@PLT
 	testq	%rax, %rax
-	je	.L20
-	testq	%r12, %r12
-	je	.L20
+	je	.L22
+	testq	%rbp, %rbp
+	je	.L22
 	movq	%rax, %rcx
 	movl	$512, %edx
 	movl	$8, %esi
-	movq	%rax, %rbp
-	movq	%r12, %rdi
-	call	fread@PLT
+	movq	%rax, %rbx
 	movq	%rbp, %rdi
+	call	fread@PLT
+	movq	%rbx, %rdi
 	call	fclose@PLT
 	leaq	.LC7(%rip), %rdi
 	call	puts@PLT
 	movq	%r13, %rsi
 	leaq	.LC8(%rip), %rdi
 	call	fopen@PLT
+	movq	%rax, %rbx
 	testq	%rax, %rax
-	movq	%rax, %rbp
-	je	.L20
-	testq	%rbx, %rbx
-	je	.L20
-	movl	$256000, %edx
+	je	.L22
+	testq	%r12, %r12
+	je	.L22
 	movq	%rax, %rcx
+	movl	$8192000, %edx
 	movl	$8, %esi
-	movq	%rbx, %rdi
+	movq	%r12, %rdi
 	call	fread@PLT
-	movq	%rbx, %rax
-	leaq	256000(%rbx), %rdx
-	.p2align 4,,10
-	.p2align 3
-.L21:
-	prefetcht2	(%rax)
-	addq	$64, %rax
-	cmpq	%rdx, %rax
-	jne	.L21
-	movq	%rbp, %rdi
+	movq	%rbx, %rdi
 	call	fclose@PLT
 	leaq	.LC9(%rip), %rdi
 	call	puts@PLT
 	xorl	%eax, %eax
-.L16:
+.L18:
 	addq	$8, %rsp
 	.cfi_remember_state
 	.cfi_def_cfa_offset 40
@@ -179,12 +194,14 @@ prepare:
 	popq	%r13
 	.cfi_def_cfa_offset 8
 	ret
-.L20:
+	.p2align 4,,10
+	.p2align 3
+.L22:
 	.cfi_restore_state
 	movl	$-1, %eax
-	jmp	.L16
+	jmp	.L18
 	.cfi_endproc
-.LFE6395:
+.LFE6396:
 	.size	prepare, .-prepare
 	.section	.rodata.str1.1
 .LC10:
@@ -200,17 +217,17 @@ prepare:
 	.globl	writeback
 	.type	writeback, @function
 writeback:
-.LFB6396:
+.LFB6397:
 	.cfi_startproc
 	pushq	%rbp
 	.cfi_def_cfa_offset 16
 	.cfi_offset 6, -16
 	leaq	.LC10(%rip), %rsi
 	movq	%rdi, %rbp
-	leaq	.LC11(%rip), %rdi
 	pushq	%rbx
 	.cfi_def_cfa_offset 24
 	.cfi_offset 3, -24
+	leaq	.LC11(%rip), %rdi
 	subq	$8, %rsp
 	.cfi_def_cfa_offset 32
 	call	fopen@PLT
@@ -245,7 +262,7 @@ writeback:
 	movl	$-1, %eax
 	jmp	.L33
 	.cfi_endproc
-.LFE6396:
+.LFE6397:
 	.size	writeback, .-writeback
 	.section	.rodata.str1.1
 .LC13:
@@ -263,7 +280,7 @@ writeback:
 	.globl	check
 	.type	check, @function
 check:
-.LFB6397:
+.LFB6398:
 	.cfi_startproc
 	pushq	%r14
 	.cfi_def_cfa_offset 16
@@ -297,7 +314,7 @@ check:
 	.p2align 4,,10
 	.p2align 3
 .L45:
-	addq	$1, %rbx
+	incq	%rbx
 	cmpq	$512000, %rbx
 	je	.L46
 .L47:
@@ -314,8 +331,8 @@ check:
 	movl	%ebx, %esi
 	leaq	.LC14(%rip), %rdi
 	xorl	%eax, %eax
-	movl	$-1, %ebp
 	call	printf@PLT
+	movl	$-1, %ebp
 .L46:
 	movq	%r12, %rdi
 	call	fclose@PLT
@@ -325,9 +342,9 @@ check:
 	addq	$16, %rsp
 	.cfi_remember_state
 	.cfi_def_cfa_offset 48
-	movl	%ebp, %eax
 	popq	%rbx
 	.cfi_def_cfa_offset 40
+	movl	%ebp, %eax
 	popq	%rbp
 	.cfi_def_cfa_offset 32
 	popq	%r12
@@ -340,56 +357,56 @@ check:
 .L44:
 	.cfi_restore_state
 	leaq	.LC16(%rip), %rdi
-	movl	$-1, %ebp
 	call	puts@PLT
+	movl	$-1, %ebp
 	jmp	.L43
 	.cfi_endproc
-.LFE6397:
+.LFE6398:
 	.size	check, .-check
 	.p2align 4
 	.globl	get_time
 	.type	get_time, @function
 get_time:
-.LFB6398:
+.LFB6399:
 	.cfi_startproc
 	subq	$24, %rsp
 	.cfi_def_cfa_offset 32
-	xorl	%esi, %esi
 	movq	%rsp, %rdi
+	xorl	%esi, %esi
 	call	gettimeofday@PLT
 	vxorps	%xmm1, %xmm1, %xmm1
 	vcvtsi2sdq	8(%rsp), %xmm1, %xmm0
-	vmulsd	.LC17(%rip), %xmm0, %xmm0
 	vcvtsi2sdq	(%rsp), %xmm1, %xmm1
+	vmulsd	.LC17(%rip), %xmm0, %xmm0
 	addq	$24, %rsp
 	.cfi_def_cfa_offset 8
 	vaddsd	%xmm1, %xmm0, %xmm0
 	ret
 	.cfi_endproc
-.LFE6398:
+.LFE6399:
 	.size	get_time, .-get_time
 	.p2align 4
 	.globl	start_perf
 	.type	start_perf, @function
 start_perf:
-.LFB6399:
+.LFB6400:
 	.cfi_startproc
 	subq	$24, %rsp
 	.cfi_def_cfa_offset 32
-	xorl	%esi, %esi
 	movq	%rsp, %rdi
+	xorl	%esi, %esi
 	call	gettimeofday@PLT
 	vxorps	%xmm1, %xmm1, %xmm1
 	vcvtsi2sdq	8(%rsp), %xmm1, %xmm0
-	vmulsd	.LC17(%rip), %xmm0, %xmm0
 	vcvtsi2sdq	(%rsp), %xmm1, %xmm1
+	vmulsd	.LC17(%rip), %xmm0, %xmm0
 	vaddsd	%xmm1, %xmm0, %xmm0
 	vmovsd	%xmm0, timestamp(%rip)
 	addq	$24, %rsp
 	.cfi_def_cfa_offset 8
 	ret
 	.cfi_endproc
-.LFE6399:
+.LFE6400:
 	.size	start_perf, .-start_perf
 	.section	.rodata.str1.1
 .LC18:
@@ -399,19 +416,19 @@ start_perf:
 	.globl	end_perf
 	.type	end_perf, @function
 end_perf:
-.LFB6400:
+.LFB6401:
 	.cfi_startproc
 	subq	$24, %rsp
 	.cfi_def_cfa_offset 32
-	xorl	%esi, %esi
 	movq	%rsp, %rdi
+	xorl	%esi, %esi
 	call	gettimeofday@PLT
 	vxorps	%xmm1, %xmm1, %xmm1
-	movl	$1, %eax
-	leaq	.LC18(%rip), %rdi
 	vcvtsi2sdq	8(%rsp), %xmm1, %xmm0
-	vmulsd	.LC17(%rip), %xmm0, %xmm0
 	vcvtsi2sdq	(%rsp), %xmm1, %xmm1
+	leaq	.LC18(%rip), %rdi
+	movl	$1, %eax
+	vmulsd	.LC17(%rip), %xmm0, %xmm0
 	vaddsd	%xmm1, %xmm0, %xmm0
 	vsubsd	timestamp(%rip), %xmm0, %xmm0
 	vmovsd	%xmm0, timestamp(%rip)
@@ -419,7 +436,7 @@ end_perf:
 	.cfi_def_cfa_offset 8
 	jmp	printf@PLT
 	.cfi_endproc
-.LFE6400:
+.LFE6401:
 	.size	end_perf, .-end_perf
 	.local	timestamp
 	.comm	timestamp,8,8

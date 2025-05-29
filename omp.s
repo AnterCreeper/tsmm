@@ -12,21 +12,21 @@ transpose:
 	leaq	128(%rsi), %rdx
 .L2:
 	vmovapd	(%rax), %ymm5
-	addq	$32, %rsi
-	addq	$1024, %rax
-	vunpcklpd	-768(%rax), %ymm5, %ymm2
-	vmovapd	-512(%rax), %ymm7
-	vunpcklpd	-256(%rax), %ymm7, %ymm3
-	vunpckhpd	-768(%rax), %ymm5, %ymm0
-	vunpckhpd	-256(%rax), %ymm7, %ymm1
+	vmovapd	512(%rax), %ymm7
+	vunpcklpd	256(%rax), %ymm5, %ymm2
+	vunpcklpd	768(%rax), %ymm7, %ymm3
+	vunpckhpd	256(%rax), %ymm5, %ymm0
+	vunpckhpd	768(%rax), %ymm7, %ymm1
 	vinsertf128	$1, %xmm3, %ymm2, %ymm4
+	vmovapd	%ymm4, (%rsi)
 	vperm2f128	$49, %ymm3, %ymm2, %ymm2
-	vmovapd	%ymm4, -32(%rsi)
 	vinsertf128	$1, %xmm1, %ymm0, %ymm4
 	vperm2f128	$49, %ymm1, %ymm0, %ymm0
-	vmovapd	%ymm4, 96(%rsi)
-	vmovapd	%ymm2, 224(%rsi)
-	vmovapd	%ymm0, 352(%rsi)
+	vmovapd	%ymm4, 128(%rsi)
+	vmovapd	%ymm2, 256(%rsi)
+	vmovapd	%ymm0, 384(%rsi)
+	addq	$32, %rsi
+	addq	$1024, %rax
 	cmpq	%rsi, %rdx
 	jne	.L2
 	vzeroupper
@@ -44,62 +44,62 @@ matmul_worker_row:
 	.cfi_def_cfa_offset 16
 	.cfi_offset 6, -16
 	sall	$2, %ecx
+	movslq	%ecx, %rcx
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	andq	$-32, %rsp
+	subq	$8, %rsp
 	vxorpd	%xmm3, %xmm3, %xmm3
+	salq	$3, %rcx
+	addq	%rcx, %rsi
 	leaq	4096(%rdi), %rax
 	vmovapd	%ymm3, %ymm2
 	vmovapd	%ymm3, %ymm1
 	vmovapd	%ymm3, %ymm0
-	movslq	%ecx, %rcx
-	salq	$3, %rcx
-	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
-	andq	$-32, %rsp
-	addq	%rcx, %rsi
-	subq	$8, %rsp
 .L6:
 	vmovapd	(%rsi), %ymm4
 	vbroadcastsd	(%rdi), %ymm8
-	addq	$1024, %rdi
-	addq	$512000, %rsi
-	vbroadcastsd	-1016(%rdi), %ymm7
-	vbroadcastsd	-1008(%rdi), %ymm6
-	vbroadcastsd	-1000(%rdi), %ymm5
+	vbroadcastsd	8(%rdi), %ymm7
+	vbroadcastsd	16(%rdi), %ymm6
+	vbroadcastsd	24(%rdi), %ymm5
 	vfmadd132pd	%ymm4, %ymm0, %ymm8
-	vmovapd	-384000(%rsi), %ymm0
 	vfmadd132pd	%ymm4, %ymm1, %ymm7
 	vfmadd132pd	%ymm4, %ymm2, %ymm6
-	vbroadcastsd	-744(%rdi), %ymm1
-	vbroadcastsd	-752(%rdi), %ymm2
 	vfmadd132pd	%ymm4, %ymm3, %ymm5
-	vbroadcastsd	-768(%rdi), %ymm4
-	vbroadcastsd	-760(%rdi), %ymm3
+	vmovapd	128000(%rsi), %ymm0
+	vbroadcastsd	256(%rdi), %ymm4
+	vbroadcastsd	264(%rdi), %ymm3
+	vbroadcastsd	272(%rdi), %ymm2
+	vbroadcastsd	280(%rdi), %ymm1
 	vfmadd132pd	%ymm0, %ymm8, %ymm4
-	vbroadcastsd	-512(%rdi), %ymm8
 	vfmadd132pd	%ymm0, %ymm7, %ymm3
 	vfmadd132pd	%ymm0, %ymm6, %ymm2
-	vbroadcastsd	-504(%rdi), %ymm7
-	vbroadcastsd	-496(%rdi), %ymm6
 	vfmadd132pd	%ymm0, %ymm5, %ymm1
-	vmovapd	-256000(%rsi), %ymm0
-	vbroadcastsd	-488(%rdi), %ymm5
+	vbroadcastsd	512(%rdi), %ymm8
+	vmovapd	256000(%rsi), %ymm0
+	vbroadcastsd	520(%rdi), %ymm7
+	vbroadcastsd	528(%rdi), %ymm6
+	vbroadcastsd	536(%rdi), %ymm5
 	vfmadd132pd	%ymm0, %ymm4, %ymm8
-	vmovapd	-128000(%rsi), %ymm4
 	vfmadd132pd	%ymm0, %ymm3, %ymm7
 	vfmadd132pd	%ymm0, %ymm2, %ymm6
-	vbroadcastsd	-232(%rdi), %ymm3
-	vbroadcastsd	-240(%rdi), %ymm2
 	vfmadd132pd	%ymm0, %ymm1, %ymm5
-	vbroadcastsd	-256(%rdi), %ymm0
-	vbroadcastsd	-248(%rdi), %ymm1
-	cmpq	%rdi, %rax
+	vbroadcastsd	784(%rdi), %ymm2
+	vbroadcastsd	768(%rdi), %ymm0
+	vbroadcastsd	776(%rdi), %ymm1
+	vbroadcastsd	792(%rdi), %ymm3
+	vmovapd	384000(%rsi), %ymm4
+	addq	$1024, %rdi
 	vfmadd132pd	%ymm4, %ymm8, %ymm0
 	vfmadd132pd	%ymm4, %ymm7, %ymm1
 	vfmadd132pd	%ymm4, %ymm6, %ymm2
 	vfmadd132pd	%ymm4, %ymm5, %ymm3
+	addq	$512000, %rsi
 	vmovapd	%ymm0, -120(%rsp)
 	vmovapd	%ymm1, -88(%rsp)
 	vmovapd	%ymm2, -56(%rsp)
 	vmovapd	%ymm3, -24(%rsp)
+	cmpq	%rdi, %rax
 	jne	.L6
 	addq	%rcx, %rdx
 	leaq	-120(%rsp), %rax
@@ -107,8 +107,8 @@ matmul_worker_row:
 .L7:
 	vmovapd	(%rax), %ymm5
 	addq	$32, %rax
+	vmovntpd	%ymm5, (%rdx)
 	addq	$128000, %rdx
-	vmovntpd	%ymm5, -128000(%rdx)
 	cmpq	%rax, %rcx
 	jne	.L7
 	vzeroupper
@@ -123,68 +123,92 @@ matmul_worker_row:
 matmul_row._omp_fn.0:
 .LFB6397:
 	.cfi_startproc
-	pushq	%r14
+	pushq	%r15
 	.cfi_def_cfa_offset 16
-	.cfi_offset 14, -16
-	pushq	%r13
+	.cfi_offset 15, -16
+	pushq	%r14
 	.cfi_def_cfa_offset 24
-	.cfi_offset 13, -24
-	pushq	%r12
+	.cfi_offset 14, -24
+	pushq	%r13
 	.cfi_def_cfa_offset 32
-	.cfi_offset 12, -32
-	pushq	%rbp
+	.cfi_offset 13, -32
+	pushq	%r12
 	.cfi_def_cfa_offset 40
-	.cfi_offset 6, -40
-	pushq	%rbx
+	.cfi_offset 12, -40
+	pushq	%rbp
 	.cfi_def_cfa_offset 48
-	.cfi_offset 3, -48
-	movq	16(%rdi), %rbx
-	movq	8(%rdi), %r12
+	.cfi_offset 6, -48
+	pushq	%rbx
+	.cfi_def_cfa_offset 56
+	.cfi_offset 3, -56
+	subq	$24, %rsp
+	.cfi_def_cfa_offset 80
+	movq	8(%rdi), %rax
 	movq	(%rdi), %rbp
+	movq	16(%rdi), %rbx
+	movq	%rax, (%rsp)
+	movq	%rbp, 8(%rsp)
 	call	omp_get_thread_num@PLT
-	movl	%eax, %r13d
+	movl	%eax, %r14d
+	sall	$2, %r14d
 	call	omp_get_num_threads@PLT
-	leal	(%r13,%r13), %r10d
-	cmpl	$3999, %r10d
+	cmpl	$3999, %r14d
 	jg	.L19
-	leal	(%rax,%rax), %r14d
+	movl	%eax, %r8d
+	leal	0(,%rax,4), %r15d
 	leaq	4096000(%rbp), %r13
 	.p2align 4,,10
 	.p2align 3
 .L14:
-	leal	1(%r10), %r11d
-	movq	%r12, %r9
-	movq	%rbp, %r8
+	movq	(%rsp), %r10
+	movq	8(%rsp), %r9
+	leal	1(%r14), %r12d
+	leal	2(%r14), %ebp
+	leal	3(%r14), %r11d
 	.p2align 4,,10
 	.p2align 3
 .L13:
-	movq	%r8, %rdx
-	movq	%r9, %rdi
-	movl	%r10d, %ecx
+	movq	%r9, %rdx
+	movq	%r10, %rdi
+	movl	%r14d, %ecx
 	movq	%rbx, %rsi
 	call	matmul_worker_row
-	movq	%r8, %rdx
-	movq	%r9, %rdi
+	movq	%r9, %rdx
+	movq	%r10, %rdi
+	movl	%r12d, %ecx
+	movq	%rbx, %rsi
+	call	matmul_worker_row
+	movq	%r9, %rdx
+	movq	%r10, %rdi
+	movl	%ebp, %ecx
+	movq	%rbx, %rsi
+	call	matmul_worker_row
+	movq	%r9, %rdx
+	movq	%r10, %rdi
 	movl	%r11d, %ecx
 	movq	%rbx, %rsi
-	addq	$512000, %r8
-	addq	$32, %r9
+	addq	$512000, %r9
 	call	matmul_worker_row
-	cmpq	%r13, %r8
+	addq	$32, %r10
+	cmpq	%r13, %r9
 	jne	.L13
-	addl	%r14d, %r10d
-	cmpl	$3999, %r10d
+	addl	%r15d, %r14d
+	cmpl	$3999, %r14d
 	jle	.L14
 .L19:
+	addq	$24, %rsp
+	.cfi_def_cfa_offset 56
 	popq	%rbx
-	.cfi_def_cfa_offset 40
+	.cfi_def_cfa_offset 48
 	popq	%rbp
-	.cfi_def_cfa_offset 32
+	.cfi_def_cfa_offset 40
 	popq	%r12
-	.cfi_def_cfa_offset 24
+	.cfi_def_cfa_offset 32
 	popq	%r13
-	.cfi_def_cfa_offset 16
+	.cfi_def_cfa_offset 24
 	popq	%r14
+	.cfi_def_cfa_offset 16
+	popq	%r15
 	.cfi_def_cfa_offset 8
 	ret
 	.cfi_endproc
@@ -198,12 +222,12 @@ matmul_row:
 	.cfi_startproc
 	subq	$40, %rsp
 	.cfi_def_cfa_offset 48
-	xorl	%ecx, %ecx
 	movq	%rdx, 16(%rsp)
-	movl	$6, %edx
 	movq	%rsi, 8(%rsp)
-	movq	%rsp, %rsi
 	movq	%rdi, (%rsp)
+	movq	%rsp, %rsi
+	xorl	%ecx, %ecx
+	movl	$6, %edx
 	leaq	matmul_row._omp_fn.0(%rip), %rdi
 	call	GOMP_parallel@PLT
 	addq	$40, %rsp
@@ -216,11 +240,15 @@ matmul_row:
 	.align 8
 .LC0:
 	.string	"failed to open file while reading data"
-	.align 8
-.LC1:
-	.string	"failed to write result to file"
 	.section	.rodata.str1.1,"aMS",@progbits,1
+.LC1:
+	.string	"start benchmark %d rounds\n"
+	.section	.rodata.str1.8
+	.align 8
 .LC2:
+	.string	"failed to write result to file"
+	.section	.rodata.str1.1
+.LC3:
 	.string	"result test failed"
 	.section	.text.startup,"ax",@progbits
 	.p2align 4
@@ -245,37 +273,46 @@ main:
 	leaq	8(%rsp), %rdi
 	call	posix_memalign@PLT
 	leaq	16(%rsp), %rdi
-	movl	$2048000, %edx
+	movl	$65536000, %edx
 	movl	$64, %esi
 	call	posix_memalign@PLT
 	leaq	24(%rsp), %rdi
-	movl	$4096000, %edx
 	movl	$64, %esi
+	movl	$4096000, %edx
 	call	posix_memalign@PLT
 	movq	16(%rsp), %rsi
 	movq	8(%rsp), %rdi
 	call	prepare@PLT
 	testl	%eax, %eax
 	jne	.L32
+	movl	$65536, %esi
+	leaq	.LC1(%rip), %rdi
+	movl	%eax, %ebx
 	xorl	%eax, %eax
-	movl	$65536, %ebx
-	leaq	32(%rsp), %r12
+	call	printf@PLT
+	xorl	%eax, %eax
 	call	start_perf@PLT
+	leaq	32(%rsp), %r12
 	leaq	matmul_row._omp_fn.0(%rip), %rbp
 	.p2align 4,,10
 	.p2align 3
 .L26:
+	movl	%ebx, %eax
+	andl	$31, %eax
 	vmovq	24(%rsp), %xmm1
-	movq	16(%rsp), %rax
-	xorl	%ecx, %ecx
-	movq	%r12, %rsi
+	imulq	$256000, %rax, %rax
+	movq	16(%rsp), %rdx
 	vpinsrq	$1, 8(%rsp), %xmm1, %xmm0
+	leaq	(%rdx,%rax,8), %rax
+	xorl	%ecx, %ecx
 	movl	$6, %edx
+	movq	%r12, %rsi
 	movq	%rbp, %rdi
+	incl	%ebx
 	movq	%rax, 48(%rsp)
 	vmovdqa	%xmm0, 32(%rsp)
 	call	GOMP_parallel@PLT
-	subl	$1, %ebx
+	cmpl	$65536, %ebx
 	jne	.L26
 	xorl	%eax, %eax
 	call	end_perf@PLT
@@ -285,8 +322,8 @@ main:
 	jne	.L33
 	movq	24(%rsp), %rdi
 	call	check@PLT
-	testl	%eax, %eax
 	movl	%eax, %ebx
+	testl	%eax, %eax
 	jne	.L34
 	movq	8(%rsp), %rdi
 	call	free@PLT
@@ -314,11 +351,11 @@ main:
 	orl	$-1, %ebx
 	jmp	.L23
 .L34:
-	leaq	.LC2(%rip), %rdi
+	leaq	.LC3(%rip), %rdi
 	call	puts@PLT
 	jmp	.L25
 .L33:
-	leaq	.LC1(%rip), %rdi
+	leaq	.LC2(%rip), %rdi
 	call	puts@PLT
 	jmp	.L25
 	.cfi_endproc

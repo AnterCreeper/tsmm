@@ -1,6 +1,6 @@
 #pragma GCC target("avx2,fma")
 #define W_OMP_THREADS   6
-#define W_TEST_CYC      16384*4 //4.8s on 6x ADL@4.0GHz
+#define W_TEST_CYC      16384*4 //7.8s on 6x ADL@4.0GHz
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,14 +31,14 @@ void transpose(double* A, double* B, int i) {
     return;
 }
 
-void matmul_worker_row(double* A, double* B, double* C, int i) {
+void matmul_worker_row(double* A, double* B, double* C, int i, int stripe) {
     __m256d Csum[4];
     for(int j = 0; j < 4; j++) Csum[j] = _mm256_setzero_pd();
     for(int j = 0; j < 4; j++) {
         int base = i*4+j*4*16000;
 #pragma GCC unroll 4
         for(int k = 0; k < 4; k++) {
-            __m256d BB = *(__m256d*)&B[base+k*16000];
+            __m256d BB = *(__m256d*)&B[base+k*16000]; //FIXME
             /*
              * As _mm256_shuffle_pd/_mm256_unpackXX_pd/_mm256_permute_pd/_mm256_permute4x64_pd could only be issued
              * at Port 5 with 1 cycle latency, so would be slower than using vbroadcastsd(_mm256_broadcast_sd) which
@@ -93,15 +93,22 @@ __m256d matmul_worker_column(double* A, double* B) { //A[4][16] B[16]
 }
 */
 
+#define min(A, B) ((A) < (B) ? (A) : (B))
+
 void matmul_row(double* C, double* A, double* B) {
 #pragma omp parallel num_threads(W_OMP_THREADS)
 {
     int start = omp_get_thread_num();
     int stripe = omp_get_num_threads();
-    for(int j = start*2; j < 4000; j += stripe*2)
+    //int begin = (2000/stripe+1)*start*2;
+    //int end = min((2000/stripe+1)*(start+1)*2, 4000);
+    //for(int j = begin; j < end; j += 2)
+    for(int j = start*4; j < 4000; j += stripe*4)
     for(int i = 0; i < 8; i += 1) {
-        matmul_worker_row(&A[i*4], B, &C[i*64000], j);
-        matmul_worker_row(&A[i*4], B, &C[i*64000], j+1);
+        matmul_worker_row(&A[i*4], B, &C[i*64000], j, stripe);
+        matmul_worker_row(&A[i*4], B, &C[i*64000], j+1, stripe);
+        matmul_worker_row(&A[i*4], B, &C[i*64000], j+2, stripe);
+        matmul_worker_row(&A[i*4], B, &C[i*64000], j+3, stripe);
     }
 }
     return;
@@ -126,15 +133,19 @@ void matmul_column(double* C, double* A, double* B) {
 int main() {
     double *A, *B, *C;
     posix_memalign((void**)&A, CACHE_LINE_SIZE, 16*32*sizeof(double));
-    posix_memalign((void**)&B, CACHE_LINE_SIZE, 16*16000*sizeof(double));
+    posix_memalign((void**)&B, CACHE_LINE_SIZE, 16*16000*sizeof(double)*W_TEST_MT);
     posix_memalign((void**)&C, CACHE_LINE_SIZE, 32*16000*sizeof(double));
+
     if(prepare(A, B)) {
         printf("failed to open file while reading data\n");
         return -1;
     }
 
+    printf("start benchmark %d rounds\n", W_TEST_CYC);
     start_perf();
-    for(int i = 0; i < W_TEST_CYC; i++) matmul_row(C, A, B);
+    for(int i = 0; i < W_TEST_CYC; i++) {
+        matmul_row(C, A, &B[(i%W_TEST_MT)*16*16000]);
+    }
     end_perf();
 
     if(writeback(C)) {
@@ -145,6 +156,7 @@ int main() {
         printf("result test failed\n");
         return -1;
     }
+
     free(A);
     free(B);
     free(C);

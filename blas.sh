@@ -1,4 +1,7 @@
 #!/bin/bash
-gcc -O2 -o ./blas ./blas.c ./common.c -lblas
+if [ -z "$TEST_SIZE" ]; then
+  export TEST_SIZE=32
+fi
+gcc -O3 -march=skylake -DW_TEST_MT=$TEST_SIZE -o ./blas ./blas.c ./common.c -lblas
 export OPENBLAS_NUM_THREADS=6
 ./blas

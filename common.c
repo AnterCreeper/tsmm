@@ -1,3 +1,4 @@
+#pragma GCC target("sse2")
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -9,26 +10,33 @@
 #endif
 #include <time.h>
 #include <immintrin.h>
+#include <string.h>
 
-void prefetch(void* data, size_t size) {
-    for(int i = 0; i < size; i++) {
-        _mm_prefetch(data+i*CACHE_LINE_SIZE, _MM_HINT_T2);
-    }
-    return;
-}
-
-void flush() {
-    int size; //in KiB
+int get_cache_size() {
+    int size = 0; //in KiB
     FILE *file = fopen("/sys/devices/system/cpu/cpu0/cache/index3/size", "r");
     if(file != NULL) {
-	fscanf(file, "%d", &size);
+        fscanf(file, "%d", &size);
         fclose(file);
         printf("l3_cache_size: %d\n", size);
     } else {
         printf("failed to get L3 cache size\n");
     }
-//    void* cache;
-//    posix_memalign(cache, CACHE_LINE_SIZE, size*1024);
+    return size;
+}
+
+void prefetch(void* data, size_t size) {
+    for(int i = 0; i < size; i+= CACHE_LINE_SIZE) {
+        _mm_prefetch(data+i, _MM_HINT_T2);
+    }
+    return;
+}
+
+void flush(void* data, int size) {
+    for(int i = 0; i < size; i+= CACHE_LINE_SIZE) {
+        _mm_clflushopt(data+i);
+    }
+    _mm_sfence();
     return;
 }
 
@@ -43,8 +51,7 @@ int prepare(double* A, double* B) {
     }
     FILE *fileB = fopen("input_B.bin", "rb");
     if(fileB != NULL && B != NULL) {
-        fread(B, sizeof(double), 16*16000, fileB);
-        prefetch(B, 16*16000/CACHE_LINE_SIZE);
+        fread(B, sizeof(double), 16*16000*W_TEST_MT, fileB);
         fclose(fileB);
         printf("matrix B has been read from input_B.bin\n");
     } else {
