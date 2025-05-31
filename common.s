@@ -72,7 +72,7 @@ prefetch:
 	.p2align 4,,10
 	.p2align 3
 .L8:
-	prefetcht2	(%rdi,%rax)
+	prefetcht0	(%rdi,%rax)
 	addq	$64, %rax
 	cmpq	%rsi, %rax
 	jb	.L8
@@ -172,7 +172,7 @@ prepare:
 	testq	%r12, %r12
 	je	.L22
 	movq	%rax, %rcx
-	movl	$8192000, %edx
+	movl	$32768000, %edx
 	movl	$8, %esi
 	movq	%r12, %rdi
 	call	fread@PLT
@@ -432,9 +432,11 @@ end_perf:
 	vaddsd	%xmm1, %xmm0, %xmm0
 	vsubsd	timestamp(%rip), %xmm0, %xmm0
 	vmovsd	%xmm0, timestamp(%rip)
+	call	printf@PLT
+	vmovsd	timestamp(%rip), %xmm0
 	addq	$24, %rsp
 	.cfi_def_cfa_offset 8
-	jmp	printf@PLT
+	ret
 	.cfi_endproc
 .LFE6401:
 	.size	end_perf, .-end_perf

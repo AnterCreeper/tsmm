@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
 #include <math.h>
 #include <cblas.h>
-
 #include "common.h"
+
+//#define W_RAND
 
 #ifndef W_TEST_CYC
 #define W_TEST_CYC      16384*4
@@ -45,11 +47,24 @@ int main(){
         printf("failed to open file while reading data\n");
         return -1;
     }
+    time_t t;
+    srand((unsigned)time(&t));
+    int rng[W_TEST_MT] = {0};
+    for(int i = 0; i < W_TEST_MT; i++) {
+        int x;
+        while(rng[x=rand()%W_TEST_MT]);
+        rng[x] = i;
+    }
 
     printf("start benchmark %d rounds\n", W_TEST_CYC);
     start_perf();
     for(int i = 0; i < W_TEST_CYC; i++) {
-        rowfirst_blas(C, A, &B[(i%W_TEST_MT)*16*16000]);
+#ifdef W_RAND
+        int pos = rng[i%W_TEST_MT];
+#else
+        int pos = i%W_TEST_MT;
+#endif
+        rowfirst_blas(C, A, &B[pos*16*16000]);
     }
     end_perf();
 
@@ -57,10 +72,12 @@ int main(){
         printf("failed to write result to file\n");
         return -1;
     }
+#ifndef W_RAND
     if(check(C)) {
         printf("result test failed\n");
         return -1;
     }
+#endif
 
     free(A);
     free(B);

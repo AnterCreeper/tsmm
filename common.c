@@ -27,7 +27,7 @@ int get_cache_size() {
 
 void prefetch(void* data, size_t size) {
     for(int i = 0; i < size; i+= CACHE_LINE_SIZE) {
-        _mm_prefetch(data+i, _MM_HINT_T2);
+        _mm_prefetch(data+i, _MM_HINT_T0);
     }
     return;
 }
@@ -127,7 +127,8 @@ void start_perf() {
     timestamp = get_time();
 }
 
-void end_perf() {
+double end_perf() {
     timestamp = get_time() - timestamp;
     printf("times: %.6lfs\n", timestamp);
+    return timestamp;
 }

@@ -1,6 +1,214 @@
 	.file	"omp.c"
 	.text
 	.p2align 4
+	.type	matmul_row._omp_fn.0, @function
+matmul_row._omp_fn.0:
+.LFB6397:
+	.cfi_startproc
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	pushq	%r15
+	pushq	%r14
+	pushq	%r13
+	pushq	%r12
+	pushq	%rbx
+	andq	$-32, %rsp
+	subq	$160, %rsp
+	.cfi_offset 15, -24
+	.cfi_offset 14, -32
+	.cfi_offset 13, -40
+	.cfi_offset 12, -48
+	.cfi_offset 3, -56
+	movq	16(%rdi), %r9
+	movq	8(%rdi), %r13
+	movq	%r9, 24(%rsp)
+	movq	(%rdi), %r15
+	call	omp_get_thread_num@PLT
+	movl	%eax, %ebx
+	leal	(%rbx,%rbx), %r14d
+	call	omp_get_num_threads@PLT
+	cmpl	$3999, %r14d
+	jg	.L17
+	leaq	32(%r15), %rdi
+	movq	24(%rsp), %r9
+	movl	%eax, %edx
+	movq	%rdi, 24(%rsp)
+	sall	$3, %ebx
+	leaq	4096(%r13), %rdi
+	leal	0(,%rdx,8), %r12d
+	movslq	%ebx, %rbx
+	leal	4(,%r14,4), %edx
+	movq	%rdi, 16(%rsp)
+	movq	%r13, 8(%rsp)
+	movslq	%r12d, %r12
+	movslq	%edx, %rdx
+	salq	$3, %rbx
+	leaq	(%r9,%rdx,8), %r10
+	leal	(%rax,%rax), %eax
+	salq	$3, %r12
+	addq	%rbx, %r9
+	leaq	4352(%r13), %r11
+	leaq	32(%rsp), %r8
+	leaq	160(%rsp), %rcx
+.L4:
+	movq	24(%rsp), %rdi
+	movq	16(%rsp), %rsi
+	leaq	(%rdi,%rbx), %r13
+	movq	8(%rsp), %rdi
+	.p2align 4,,10
+	.p2align 3
+.L3:
+	vxorpd	%xmm6, %xmm6, %xmm6
+	movq	%rdi, %rdx
+	movq	%r9, %r15
+	vmovapd	%ymm6, %ymm4
+	vmovapd	%ymm6, %ymm2
+	vmovapd	%ymm6, %ymm0
+.L5:
+	vbroadcastsd	16(%rdx), %ymm5
+	vmovapd	(%r15), %ymm8
+	vbroadcastsd	(%rdx), %ymm1
+	vbroadcastsd	8(%rdx), %ymm3
+	vbroadcastsd	24(%rdx), %ymm7
+	vfmadd231pd	%ymm8, %ymm5, %ymm4
+	vfmadd231pd	%ymm8, %ymm1, %ymm0
+	vfmadd231pd	%ymm8, %ymm3, %ymm2
+	vfmadd231pd	%ymm8, %ymm7, %ymm6
+	vbroadcastsd	272(%rdx), %ymm5
+	vmovapd	128000(%r15), %ymm1
+	vbroadcastsd	280(%rdx), %ymm3
+	vbroadcastsd	256(%rdx), %ymm10
+	vbroadcastsd	264(%rdx), %ymm9
+	vfmadd132pd	%ymm1, %ymm4, %ymm5
+	vfmadd132pd	%ymm1, %ymm0, %ymm10
+	vfmadd132pd	%ymm1, %ymm2, %ymm9
+	vfmadd132pd	%ymm3, %ymm6, %ymm1
+	vmovapd	256000(%r15), %ymm0
+	vbroadcastsd	512(%rdx), %ymm8
+	vbroadcastsd	520(%rdx), %ymm7
+	vbroadcastsd	536(%rdx), %ymm3
+	vmovapd	%ymm5, %ymm2
+	vbroadcastsd	528(%rdx), %ymm5
+	vfmadd132pd	%ymm0, %ymm1, %ymm3
+	vfmadd132pd	%ymm0, %ymm2, %ymm5
+	vfmadd132pd	%ymm0, %ymm10, %ymm8
+	vfmadd132pd	%ymm0, %ymm9, %ymm7
+	vbroadcastsd	776(%rdx), %ymm2
+	vbroadcastsd	768(%rdx), %ymm0
+	vbroadcastsd	784(%rdx), %ymm4
+	vbroadcastsd	792(%rdx), %ymm6
+	vmovapd	384000(%r15), %ymm1
+	addq	$1024, %rdx
+	vfmadd132pd	%ymm1, %ymm8, %ymm0
+	vfmadd132pd	%ymm1, %ymm7, %ymm2
+	vfmadd132pd	%ymm1, %ymm5, %ymm4
+	vfmadd132pd	%ymm1, %ymm3, %ymm6
+	addq	$512000, %r15
+	vmovapd	%ymm0, 32(%rsp)
+	vmovapd	%ymm2, 64(%rsp)
+	vmovapd	%ymm4, 96(%rsp)
+	vmovapd	%ymm6, 128(%rsp)
+	cmpq	%rdx, %rsi
+	jne	.L5
+	movq	%r8, %rdx
+	leaq	-32(%r13), %r15
+.L6:
+	vmovapd	(%rdx), %ymm7
+	addq	$32, %rdx
+	vmovapd	%ymm7, (%r15)
+	addq	$128000, %r15
+	cmpq	%rdx, %rcx
+	jne	.L6
+	vxorpd	%xmm6, %xmm6, %xmm6
+	movq	%rdi, %rdx
+	movq	%r10, %r15
+	vmovapd	%ymm6, %ymm4
+	vmovapd	%ymm6, %ymm2
+	vmovapd	%ymm6, %ymm0
+.L7:
+	vbroadcastsd	8(%rdx), %ymm3
+	vmovapd	(%r15), %ymm8
+	vbroadcastsd	(%rdx), %ymm1
+	vbroadcastsd	16(%rdx), %ymm5
+	vbroadcastsd	24(%rdx), %ymm7
+	vfmadd231pd	%ymm8, %ymm3, %ymm2
+	vfmadd231pd	%ymm8, %ymm1, %ymm0
+	vfmadd231pd	%ymm8, %ymm5, %ymm4
+	vfmadd231pd	%ymm8, %ymm7, %ymm6
+	vbroadcastsd	272(%rdx), %ymm5
+	vbroadcastsd	264(%rdx), %ymm9
+	vmovapd	128000(%r15), %ymm1
+	vbroadcastsd	280(%rdx), %ymm3
+	vbroadcastsd	256(%rdx), %ymm10
+	vfmadd132pd	%ymm1, %ymm2, %ymm9
+	vmovapd	%ymm5, %ymm2
+	vfmadd132pd	%ymm1, %ymm4, %ymm2
+	vfmadd132pd	%ymm1, %ymm0, %ymm10
+	vfmadd132pd	%ymm3, %ymm6, %ymm1
+	vmovapd	256000(%r15), %ymm0
+	vbroadcastsd	512(%rdx), %ymm8
+	vbroadcastsd	520(%rdx), %ymm7
+	vbroadcastsd	528(%rdx), %ymm5
+	vbroadcastsd	536(%rdx), %ymm3
+	vfmadd132pd	%ymm0, %ymm2, %ymm5
+	vfmadd132pd	%ymm0, %ymm1, %ymm3
+	vfmadd132pd	%ymm0, %ymm10, %ymm8
+	vfmadd132pd	%ymm0, %ymm9, %ymm7
+	vbroadcastsd	776(%rdx), %ymm2
+	vbroadcastsd	768(%rdx), %ymm0
+	vbroadcastsd	784(%rdx), %ymm4
+	vbroadcastsd	792(%rdx), %ymm6
+	vmovapd	384000(%r15), %ymm1
+	addq	$1024, %rdx
+	vfmadd132pd	%ymm1, %ymm8, %ymm0
+	vfmadd132pd	%ymm1, %ymm7, %ymm2
+	vfmadd132pd	%ymm1, %ymm5, %ymm4
+	vfmadd132pd	%ymm1, %ymm3, %ymm6
+	addq	$512000, %r15
+	vmovapd	%ymm0, 32(%rsp)
+	vmovapd	%ymm2, 64(%rsp)
+	vmovapd	%ymm4, 96(%rsp)
+	vmovapd	%ymm6, 128(%rsp)
+	cmpq	%rdx, %rsi
+	jne	.L7
+	movq	%r8, %rdx
+	movq	%r13, %r15
+.L8:
+	vmovapd	(%rdx), %ymm7
+	addq	$32, %rdx
+	vmovapd	%ymm7, (%r15)
+	addq	$128000, %r15
+	cmpq	%rdx, %rcx
+	jne	.L8
+	addq	$32, %rsi
+	addq	$512000, %r13
+	addq	$32, %rdi
+	cmpq	%rsi, %r11
+	jne	.L3
+	addl	%eax, %r14d
+	addq	%r12, %r10
+	addq	%r12, %rbx
+	addq	%r12, %r9
+	cmpl	$3999, %r14d
+	jle	.L4
+	vzeroupper
+.L17:
+	leaq	-40(%rbp), %rsp
+	popq	%rbx
+	popq	%r12
+	popq	%r13
+	popq	%r14
+	popq	%r15
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE6397:
+	.size	matmul_row._omp_fn.0, .-matmul_row._omp_fn.0
+	.p2align 4
 	.globl	transpose
 	.type	transpose, @function
 transpose:
@@ -10,7 +218,7 @@ transpose:
 	movslq	%edx, %rdx
 	leaq	(%rdi,%rdx,8), %rax
 	leaq	128(%rsi), %rdx
-.L2:
+.L21:
 	vmovapd	(%rax), %ymm5
 	vmovapd	512(%rax), %ymm7
 	vunpcklpd	256(%rax), %ymm5, %ymm2
@@ -28,192 +236,12 @@ transpose:
 	addq	$32, %rsi
 	addq	$1024, %rax
 	cmpq	%rsi, %rdx
-	jne	.L2
+	jne	.L21
 	vzeroupper
 	ret
 	.cfi_endproc
 .LFE6393:
 	.size	transpose, .-transpose
-	.p2align 4
-	.globl	matmul_worker_row
-	.type	matmul_worker_row, @function
-matmul_worker_row:
-.LFB6394:
-	.cfi_startproc
-	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	.cfi_offset 6, -16
-	sall	$2, %ecx
-	movslq	%ecx, %rcx
-	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
-	andq	$-32, %rsp
-	subq	$8, %rsp
-	vxorpd	%xmm3, %xmm3, %xmm3
-	salq	$3, %rcx
-	addq	%rcx, %rsi
-	leaq	4096(%rdi), %rax
-	vmovapd	%ymm3, %ymm2
-	vmovapd	%ymm3, %ymm1
-	vmovapd	%ymm3, %ymm0
-.L6:
-	vmovapd	(%rsi), %ymm4
-	vbroadcastsd	(%rdi), %ymm8
-	vbroadcastsd	8(%rdi), %ymm7
-	vbroadcastsd	16(%rdi), %ymm6
-	vbroadcastsd	24(%rdi), %ymm5
-	vfmadd132pd	%ymm4, %ymm0, %ymm8
-	vfmadd132pd	%ymm4, %ymm1, %ymm7
-	vfmadd132pd	%ymm4, %ymm2, %ymm6
-	vfmadd132pd	%ymm4, %ymm3, %ymm5
-	vmovapd	128000(%rsi), %ymm0
-	vbroadcastsd	256(%rdi), %ymm4
-	vbroadcastsd	264(%rdi), %ymm3
-	vbroadcastsd	272(%rdi), %ymm2
-	vbroadcastsd	280(%rdi), %ymm1
-	vfmadd132pd	%ymm0, %ymm8, %ymm4
-	vfmadd132pd	%ymm0, %ymm7, %ymm3
-	vfmadd132pd	%ymm0, %ymm6, %ymm2
-	vfmadd132pd	%ymm0, %ymm5, %ymm1
-	vbroadcastsd	512(%rdi), %ymm8
-	vmovapd	256000(%rsi), %ymm0
-	vbroadcastsd	520(%rdi), %ymm7
-	vbroadcastsd	528(%rdi), %ymm6
-	vbroadcastsd	536(%rdi), %ymm5
-	vfmadd132pd	%ymm0, %ymm4, %ymm8
-	vfmadd132pd	%ymm0, %ymm3, %ymm7
-	vfmadd132pd	%ymm0, %ymm2, %ymm6
-	vfmadd132pd	%ymm0, %ymm1, %ymm5
-	vbroadcastsd	784(%rdi), %ymm2
-	vbroadcastsd	768(%rdi), %ymm0
-	vbroadcastsd	776(%rdi), %ymm1
-	vbroadcastsd	792(%rdi), %ymm3
-	vmovapd	384000(%rsi), %ymm4
-	addq	$1024, %rdi
-	vfmadd132pd	%ymm4, %ymm8, %ymm0
-	vfmadd132pd	%ymm4, %ymm7, %ymm1
-	vfmadd132pd	%ymm4, %ymm6, %ymm2
-	vfmadd132pd	%ymm4, %ymm5, %ymm3
-	addq	$512000, %rsi
-	vmovapd	%ymm0, -120(%rsp)
-	vmovapd	%ymm1, -88(%rsp)
-	vmovapd	%ymm2, -56(%rsp)
-	vmovapd	%ymm3, -24(%rsp)
-	cmpq	%rdi, %rax
-	jne	.L6
-	addq	%rcx, %rdx
-	leaq	-120(%rsp), %rax
-	leaq	8(%rsp), %rcx
-.L7:
-	vmovapd	(%rax), %ymm5
-	addq	$32, %rax
-	vmovntpd	%ymm5, (%rdx)
-	addq	$128000, %rdx
-	cmpq	%rax, %rcx
-	jne	.L7
-	vzeroupper
-	leave
-	.cfi_def_cfa 7, 8
-	ret
-	.cfi_endproc
-.LFE6394:
-	.size	matmul_worker_row, .-matmul_worker_row
-	.p2align 4
-	.type	matmul_row._omp_fn.0, @function
-matmul_row._omp_fn.0:
-.LFB6397:
-	.cfi_startproc
-	pushq	%r15
-	.cfi_def_cfa_offset 16
-	.cfi_offset 15, -16
-	pushq	%r14
-	.cfi_def_cfa_offset 24
-	.cfi_offset 14, -24
-	pushq	%r13
-	.cfi_def_cfa_offset 32
-	.cfi_offset 13, -32
-	pushq	%r12
-	.cfi_def_cfa_offset 40
-	.cfi_offset 12, -40
-	pushq	%rbp
-	.cfi_def_cfa_offset 48
-	.cfi_offset 6, -48
-	pushq	%rbx
-	.cfi_def_cfa_offset 56
-	.cfi_offset 3, -56
-	subq	$24, %rsp
-	.cfi_def_cfa_offset 80
-	movq	8(%rdi), %rax
-	movq	(%rdi), %rbp
-	movq	16(%rdi), %rbx
-	movq	%rax, (%rsp)
-	movq	%rbp, 8(%rsp)
-	call	omp_get_thread_num@PLT
-	movl	%eax, %r14d
-	sall	$2, %r14d
-	call	omp_get_num_threads@PLT
-	cmpl	$3999, %r14d
-	jg	.L19
-	movl	%eax, %r8d
-	leal	0(,%rax,4), %r15d
-	leaq	4096000(%rbp), %r13
-	.p2align 4,,10
-	.p2align 3
-.L14:
-	movq	(%rsp), %r10
-	movq	8(%rsp), %r9
-	leal	1(%r14), %r12d
-	leal	2(%r14), %ebp
-	leal	3(%r14), %r11d
-	.p2align 4,,10
-	.p2align 3
-.L13:
-	movq	%r9, %rdx
-	movq	%r10, %rdi
-	movl	%r14d, %ecx
-	movq	%rbx, %rsi
-	call	matmul_worker_row
-	movq	%r9, %rdx
-	movq	%r10, %rdi
-	movl	%r12d, %ecx
-	movq	%rbx, %rsi
-	call	matmul_worker_row
-	movq	%r9, %rdx
-	movq	%r10, %rdi
-	movl	%ebp, %ecx
-	movq	%rbx, %rsi
-	call	matmul_worker_row
-	movq	%r9, %rdx
-	movq	%r10, %rdi
-	movl	%r11d, %ecx
-	movq	%rbx, %rsi
-	addq	$512000, %r9
-	call	matmul_worker_row
-	addq	$32, %r10
-	cmpq	%r13, %r9
-	jne	.L13
-	addl	%r15d, %r14d
-	cmpl	$3999, %r14d
-	jle	.L14
-.L19:
-	addq	$24, %rsp
-	.cfi_def_cfa_offset 56
-	popq	%rbx
-	.cfi_def_cfa_offset 48
-	popq	%rbp
-	.cfi_def_cfa_offset 40
-	popq	%r12
-	.cfi_def_cfa_offset 32
-	popq	%r13
-	.cfi_def_cfa_offset 24
-	popq	%r14
-	.cfi_def_cfa_offset 16
-	popq	%r15
-	.cfi_def_cfa_offset 8
-	ret
-	.cfi_endproc
-.LFE6397:
-	.size	matmul_row._omp_fn.0, .-matmul_row._omp_fn.0
 	.p2align 4
 	.globl	matmul_row
 	.type	matmul_row, @function
@@ -268,71 +296,96 @@ main:
 	pushq	%rbx
 	.cfi_def_cfa_offset 32
 	.cfi_offset 3, -32
-	subq	$64, %rsp
-	.cfi_def_cfa_offset 96
-	leaq	8(%rsp), %rdi
+	subq	$576, %rsp
+	.cfi_def_cfa_offset 608
+	movq	%rsp, %rdi
 	call	posix_memalign@PLT
-	leaq	16(%rsp), %rdi
-	movl	$65536000, %edx
+	leaq	8(%rsp), %rdi
+	movl	$262144000, %edx
 	movl	$64, %esi
 	call	posix_memalign@PLT
-	leaq	24(%rsp), %rdi
+	leaq	16(%rsp), %rdi
 	movl	$64, %esi
 	movl	$4096000, %edx
 	call	posix_memalign@PLT
-	movq	16(%rsp), %rsi
-	movq	8(%rsp), %rdi
+	movq	8(%rsp), %rsi
+	movq	(%rsp), %rdi
 	call	prepare@PLT
 	testl	%eax, %eax
-	jne	.L32
+	jne	.L38
+	leaq	24(%rsp), %rdi
+	movl	%eax, %ebx
+	call	time@PLT
+	movl	%eax, %edi
+	call	srand@PLT
+	leaq	64(%rsp), %rdi
+	movl	$512, %edx
+	xorl	%esi, %esi
+	call	memset@PLT
+	.p2align 4,,10
+	.p2align 3
+.L28:
+	call	rand@PLT
+	cltd
+	shrl	$25, %edx
+	addl	%edx, %eax
+	andl	$127, %eax
+	subl	%edx, %eax
+	cltq
+	movl	64(%rsp,%rax,4), %ebp
+	testl	%ebp, %ebp
+	jne	.L28
+	movl	%ebx, 64(%rsp,%rax,4)
+	incl	%ebx
+	cmpl	$128, %ebx
+	jne	.L28
 	movl	$65536, %esi
 	leaq	.LC1(%rip), %rdi
-	movl	%eax, %ebx
 	xorl	%eax, %eax
 	call	printf@PLT
 	xorl	%eax, %eax
 	call	start_perf@PLT
 	leaq	32(%rsp), %r12
-	leaq	matmul_row._omp_fn.0(%rip), %rbp
+	leaq	matmul_row._omp_fn.0(%rip), %rbx
 	.p2align 4,,10
 	.p2align 3
-.L26:
-	movl	%ebx, %eax
-	andl	$31, %eax
-	vmovq	24(%rsp), %xmm1
+.L30:
+	movl	%ebp, %eax
+	andl	$127, %eax
+	vmovq	16(%rsp), %xmm1
 	imulq	$256000, %rax, %rax
-	movq	16(%rsp), %rdx
-	vpinsrq	$1, 8(%rsp), %xmm1, %xmm0
+	movq	8(%rsp), %rdx
+	vpinsrq	$1, (%rsp), %xmm1, %xmm0
 	leaq	(%rdx,%rax,8), %rax
 	xorl	%ecx, %ecx
 	movl	$6, %edx
 	movq	%r12, %rsi
-	movq	%rbp, %rdi
-	incl	%ebx
+	movq	%rbx, %rdi
+	incl	%ebp
 	movq	%rax, 48(%rsp)
 	vmovdqa	%xmm0, 32(%rsp)
 	call	GOMP_parallel@PLT
-	cmpl	$65536, %ebx
-	jne	.L26
+	cmpl	$65536, %ebp
+	jne	.L30
 	xorl	%eax, %eax
 	call	end_perf@PLT
-	movq	24(%rsp), %rdi
+	movq	16(%rsp), %rdi
 	call	writeback@PLT
 	testl	%eax, %eax
-	jne	.L33
-	movq	24(%rsp), %rdi
+	jne	.L39
+	movq	16(%rsp), %rdi
 	call	check@PLT
 	movl	%eax, %ebx
 	testl	%eax, %eax
-	jne	.L34
+	jne	.L40
+	movq	(%rsp), %rdi
+	call	free@PLT
 	movq	8(%rsp), %rdi
 	call	free@PLT
 	movq	16(%rsp), %rdi
 	call	free@PLT
-	movq	24(%rsp), %rdi
-	call	free@PLT
-.L23:
-	addq	$64, %rsp
+.L25:
+	addq	$576, %rsp
 	.cfi_remember_state
 	.cfi_def_cfa_offset 32
 	movl	%ebx, %eax
@@ -343,21 +396,21 @@ main:
 	popq	%r12
 	.cfi_def_cfa_offset 8
 	ret
-.L32:
+.L38:
 	.cfi_restore_state
 	leaq	.LC0(%rip), %rdi
 	call	puts@PLT
-.L25:
+.L27:
 	orl	$-1, %ebx
-	jmp	.L23
-.L34:
+	jmp	.L25
+.L40:
 	leaq	.LC3(%rip), %rdi
 	call	puts@PLT
-	jmp	.L25
-.L33:
+	jmp	.L27
+.L39:
 	leaq	.LC2(%rip), %rdi
 	call	puts@PLT
-	jmp	.L25
+	jmp	.L27
 	.cfi_endproc
 .LFE6396:
 	.size	main, .-main

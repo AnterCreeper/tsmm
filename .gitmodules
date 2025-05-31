@@ -7,3 +7,6 @@
 [submodule "STREAM"]
 	path = STREAM
 	url = https://github.com/jeffhammond/STREAM
+[submodule "cpufp"]
+	path = cpufp
+	url = https://github.com/pigirons/cpufp

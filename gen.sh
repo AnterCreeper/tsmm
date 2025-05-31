@@ -1,6 +1,6 @@
 #!/bin/bash
 #count=16*16000*64/8/512
-export TEST_SIZE=32
+export TEST_SIZE=128
 rm matgen
 gcc -Ofast ./gen.c -o ./matgen
 ./matgen 512 input_A.bin

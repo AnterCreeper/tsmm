@@ -2,3 +2,8 @@ test.sh: Test & Analysis OpenMP matmul
 build.sh: Build OpenMP matmul demo
 blas.sh: Build BLAS standard demo
 gen.sh: Generate random input and standard result
+
+cpufp: fp performance benchmark
+perfmon: Intel Perf analysis metrics
+pmu-tools: perf tools
+STREAM: memory BW benchmark
