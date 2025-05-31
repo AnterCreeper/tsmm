@@ -1,5 +1,5 @@
 #!/bin/bash
-./build.sh
+./build.sh 6
 ./openmp_example
 perf record -F 999 ./openmp_example
 perf stat ./openmp_example
