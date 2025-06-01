@@ -1,0 +1,28 @@
+UCAS Tall-Skinny Matrix Multiplication(TSMM) Homework
+(m,n,k) = (8,16,16000) GEMM
+Row-first Storage
+
+This project is using GPL v2 LICENSE.
+
+Code:
+common.c: Common functions
+gen.c: Random data generate
+omp.c: main program
+mpi.c: MPI version(deprecated)
+blas.c: BLAS & Serial version
+
+Script:
+test.sh: Test & Analysis OpenMP matmul
+build.sh: Build OpenMP matmul demo
+blas.sh: Build BLAS standard demo
+gen.sh: Generate random input and standard result
+srun.sh: Slurm Testing script
+install_perf.sh: Install pmu-tools
+clear.sh: Cleaning
+
+Tools:
+Use `git submodule init` first.
+cpufp: fp performance benchmark
+perfmon: Intel Perf analysis metrics
+pmu-tools: perf tools
+STREAM: memory BW benchmark

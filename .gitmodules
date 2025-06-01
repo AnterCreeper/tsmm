@@ -1,0 +1,12 @@
+[submodule "STREAM"]
+	path = STREAM
+	url = https://github.com/jeffhammond/STREAM
+[submodule "cpufp"]
+	path = cpufp
+	url = https://github.com/pigirons/cpufp
+[submodule "perfmon"]
+	path = perfmon
+	url = https://github.com/intel/perfmon
+[submodule "pmu-tools"]
+	path = pmu-tools
+	url = https://github.com/andikleen/pmu-tools
