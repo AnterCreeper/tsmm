@@ -8,7 +8,7 @@ Code:
 common.c: Common functions
 gen.c: Random data generate
 omp.c: main program
-mpi.c: MPI version(deprecated)
+mpi.c: old MPI version, contain some early optimize strategy(deprecated)
 blas.c: BLAS & Serial version
 
 Script:
@@ -23,7 +23,7 @@ install_perf.sh: Install pmu-tools
 clear.sh: Cleaning
 
 Tools:
-Use `git submodule init` first.
+Use `git submodule init` first.(in init.sh)
 cpufp: fp performance benchmark
 perfmon: Intel Perf analysis metrics
 pmu-tools: perf tools
