@@ -1,3 +1,3 @@
 #!/bin/bash
-export PERFMONDIR=./perfmon
+export PERFMONDIR=file://`pwd`/perfmon
 ./pmu-tools/event_download
