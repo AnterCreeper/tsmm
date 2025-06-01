@@ -12,6 +12,8 @@ mpi.c: MPI version(deprecated)
 blas.c: BLAS & Serial version
 
 Script:
+roofline.py: Draw roofline picture
+init.sh: Init Dev env
 test.sh: Test & Analysis OpenMP matmul
 build.sh: Build OpenMP matmul demo
 blas.sh: Build BLAS standard demo
