@@ -2,6 +2,10 @@ UCAS Tall-Skinny Matrix Multiplication(TSMM) Homework
 (m,n,k) = (8,16,16000) GEMM
 Row-first Storage
 
+TODO:
+- AVX2 assembly optimization
+- NUMA optimization 
+
 This project is using GPL v2 LICENSE.
 
 Code:
