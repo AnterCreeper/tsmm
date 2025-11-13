@@ -1,6 +1,8 @@
 /*
 	Example of compiler builtin vector support.
 	Below codes will generate almost same instructions.
+	
+	https://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html
 */
 
 
